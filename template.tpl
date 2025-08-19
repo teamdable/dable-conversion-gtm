@@ -1,4 +1,12 @@
-﻿___INFO___
+﻿___TERMS_OF_SERVICE___
+
+By creating or modifying this file you agree to Google Tag Manager's Community
+Template Gallery Developer Terms of Service available at
+https://developers.google.com/tag-manager/gallery-tos (or such other URL as
+Google may provide), as modified from time to time.
+
+
+___INFO___
 
 {
   "displayName": "Dable Pixel",
@@ -556,7 +564,263 @@ ___WEB_PERMISSIONS___
 
 ___TESTS___
 
-scenarios: []
+scenarios:
+- name: Test Basic PageView
+  code: |-
+    // 테스트 데이터
+    const mockData = {
+      serviceId: '001-000-001',
+      businessType: 'lead',
+      eventType: 'PageView',
+      scriptAlreadyLoaded: false,
+      debugMode: false
+    };
+
+    // Mock 함수들
+    mock('createQueue', function(name) {
+      assertThat(name).isEqualTo('dablena');
+      return function() {};
+    });
+
+    mock('copyFromWindow', function(name) {
+      if (name === '__dable_gtm_loaded') return false;
+      return undefined;
+    });
+
+    mock('setInWindow', function(name, value) {
+      if (name === '__dablena_gtm_loaded') {
+        assertThat(value).isEqualTo(true);
+      }
+      return true;
+    });
+
+    mock('injectScript', function(url, onSuccess) {
+      assertThat(url).isEqualTo('https://static.dable.io/dist/dablena.min.js');
+      onSuccess();
+    });
+
+    mock('makeTableMap', function() {
+      return {};
+    });
+
+    // 템플릿 실행
+    runCode(mockData);
+- name: Test Purchase Event with Value
+  code: "// Test Purchase Event with Value\nconst mockData = {\n    serviceId: '001-000-001',\n\
+    \    businessType: 'ecommerce',\n    eventType: 'Purchase',\n    addValue: true,\n\
+    \    value: '15000',\n    addCurrency: true,\n    currency: 'KRW',\n    scriptAlreadyLoaded:\
+    \ true,\n    debugMode: false\n  };\n  \n  let dablenaCallArgs = [];\n  \n  mock('createQueue',\
+    \ function(name) {\n    return function() {\n      dablenaCallArgs.push(arguments);\n\
+    \    };\n  });\n  \n  mock('copyFromWindow', function(name) {\n    if (name ===\
+    \ '__dablena_gtm_loaded') return true;\n    return undefined;\n  });\n  \n  mock('setInWindow',\
+    \ function() {\n    return true;\n  });\n  \n  mock('injectScript', function(url,\
+    \ onSuccess) {\n    onSuccess();\n  });\n  \n  mock('makeTableMap', function()\
+    \ {\n    return {};\n  });\n  \n  // 실행\n  runCode(mockData);\n  \n  // 검증\n \
+    \ assertThat(dablenaCallArgs.length).isGreaterThan(0);\n  // Purchase 이벤트와 파라미\
+    터 확인\n  let foundPurchase = false;\n  for (let i = 0; i < dablenaCallArgs.length;\
+    \ i++) {\n    if (dablenaCallArgs[i][1] === 'Purchase') {\n      foundPurchase\
+    \ = true;\n      assertThat(dablenaCallArgs[i][2].value).isEqualTo('15000');\n\
+    \      assertThat(dablenaCallArgs[i][2].currency).isEqualTo('KRW');\n    }\n \
+    \ }\n  assertThat(foundPurchase).isTrue();"
+- name: Test Custom Event
+  code: "// Test Custom Event\nconst mockData = {\n    serviceId: '001-000-001',\n\
+    \    businessType: 'custom',\n    eventType: 'custom',\n    customEventName: 'video_complete',\n\
+    \    scriptAlreadyLoaded: true,\n    debugMode: false\n  };\n  \n  let eventTracked\
+    \ = '';\n  \n  mock('createQueue', function(name) {\n    return function(cmd,\
+    \ eventName) {\n      if (cmd === 'track') {\n        eventTracked = eventName;\n\
+    \      }\n    };\n  });\n  \n  mock('copyFromWindow', function(name) {\n    if\
+    \ (name === '__dablena_gtm_loaded') return true;\n    return undefined;\n  });\n\
+    \  \n  mock('injectScript', function(url, onSuccess) {\n    onSuccess();\n  });\n\
+    \  \n  mock('makeTableMap', function() {\n    return {};\n  });\n  \n  runCode(mockData);\n\
+    \  \n  assertThat(eventTracked).isEqualTo('video_complete');"
+- name: Test Debug Mode
+  code: "// Test Debug Mode\nconst mockData = {\n    serviceId: '001-000-001',\n \
+    \   businessType: 'lead',\n    eventType: 'Lead',\n    scriptAlreadyLoaded: false,\n\
+    \    debugMode: true  // 디버그 모드 활성화\n  };\n  \n  let logMessages = [];\n  \n \
+    \ mock('createQueue', function() {\n    return function() {};\n  });\n  \n  mock('copyFromWindow',\
+    \ function() {\n    return false;\n  });\n  \n  mock('setInWindow', function()\
+    \ {\n    return true;\n  });\n  \n  mock('logToConsole', function(message) {\n\
+    \    logMessages.push(message);\n  });\n  \n  mock('injectScript', function(url,\
+    \ onSuccess) {\n    onSuccess();\n  });\n  \n  mock('makeTableMap', function()\
+    \ {\n    return {};\n  });\n  \n  runCode(mockData);\n  \n  // 디버그 로그가 출력되었는지\
+    \ 확인\n  assertThat(logMessages.length).isGreaterThan(0);"
+- name: Test Script Already Loaded Check
+  code: "// Test Script Already Loaded Check\nconst mockData = {\n    serviceId: '001-000-001',\n\
+    \    businessType: 'lead',\n    eventType: 'ViewContent',\n    scriptAlreadyLoaded:\
+    \ false,\n    debugMode: false\n  };\n  \n  let initCalled = false;\n  let pageViewCalled\
+    \ = false;\n  \n  mock('createQueue', function() {\n    return function(cmd, param)\
+    \ {\n      if (cmd === 'init') initCalled = true;\n      if (cmd === 'track' &&\
+    \ param === 'PageView') pageViewCalled = true;\n    };\n  });\n  \n  mock('copyFromWindow',\
+    \ function(name) {\n    // 이미 로드된 상태로 모킹\n    if (name === '__dablena_gtm_loaded')\
+    \ return true;\n    return undefined;\n  });\n  \n  mock('setInWindow', function()\
+    \ {\n    return true;\n  });\n  \n  mock('injectScript', function(url, onSuccess)\
+    \ {\n    onSuccess();\n  });\n  \n  mock('makeTableMap', function() {\n    return\
+    \ {};\n  });\n  \n  runCode(mockData);\n  \n  // 이미 로드된 경우 init과 PageView가 호출되\
+    지 않아야 함\n  assertThat(initCalled).isFalse();\n  assertThat(pageViewCalled).isFalse();"
+- name: Test ViewContent Event
+  code: "// Test ViewContent Event\n// 콘텐츠 조회 이벤트 테스트\nconst mockData = {\n    serviceId:\
+    \ '001-000-001',\n    businessType: 'lead',\n    eventType: 'ViewContent',\n \
+    \   scriptAlreadyLoaded: true,\n    debugMode: false\n  };\n  \n  let trackedEvents\
+    \ = [];\n  \n  mock('createQueue', function(name) {\n    return function(cmd,\
+    \ eventName, params) {\n      if (cmd === 'track') {\n        trackedEvents.push({event:\
+    \ eventName, params: params});\n      }\n    };\n  });\n  \n  mock('copyFromWindow',\
+    \ function(name) {\n    if (name === '__dablena_gtm_loaded') return true;\n  \
+    \  return undefined;\n  });\n  \n  mock('injectScript', function(url, onSuccess)\
+    \ {\n    onSuccess();\n  });\n  \n  mock('makeTableMap', function() {\n    return\
+    \ {};\n  });\n  \n  runCode(mockData);\n  \n  assertThat(trackedEvents.length).isEqualTo(1);\n\
+    \  assertThat(trackedEvents[0].event).isEqualTo('ViewContent');"
+- name: Test Search Event
+  code: "// Test Search Event\n// 검색 이벤트 테스트\nconst mockData = {\n    serviceId: '001-000-001',\n\
+    \    businessType: 'lead',\n    eventType: 'Search',\n    scriptAlreadyLoaded:\
+    \ true,\n    debugMode: false\n  };\n  \n  let trackedEvents = [];\n  \n  mock('createQueue',\
+    \ function(name) {\n    return function(cmd, eventName, params) {\n      if (cmd\
+    \ === 'track') {\n        trackedEvents.push({event: eventName, params: params});\n\
+    \      }\n    };\n  });\n  \n  mock('copyFromWindow', function(name) {\n    if\
+    \ (name === '__dablena_gtm_loaded') return true;\n    return undefined;\n  });\n\
+    \  \n  mock('injectScript', function(url, onSuccess) {\n    onSuccess();\n  });\n\
+    \  \n  mock('makeTableMap', function() {\n    return {};\n  });\n  \n  runCode(mockData);\n\
+    \  \n  assertThat(trackedEvents.length).isEqualTo(1);\n  assertThat(trackedEvents[0].event).isEqualTo('Search');"
+- name: Test Lead Event
+  code: "// Test Lead Event\n// 잠재고객 이벤트 테스트\nconst mockData = {\n    serviceId: '001-000-001',\n\
+    \    businessType: 'lead',\n    eventType: 'Lead',\n    scriptAlreadyLoaded: true,\n\
+    \    debugMode: false\n  };\n  \n  let trackedEvents = [];\n  \n  mock('createQueue',\
+    \ function(name) {\n    return function(cmd, eventName, params) {\n      if (cmd\
+    \ === 'track') {\n        trackedEvents.push({event: eventName, params: params});\n\
+    \      }\n    };\n  });\n  \n  mock('copyFromWindow', function(name) {\n    if\
+    \ (name === '__dablena_gtm_loaded') return true;\n    return undefined;\n  });\n\
+    \  \n  mock('injectScript', function(url, onSuccess) {\n    onSuccess();\n  });\n\
+    \  \n  mock('makeTableMap', function() {\n    return {};\n  });\n  \n  runCode(mockData);\n\
+    \  \n  assertThat(trackedEvents.length).isEqualTo(1);\n  assertThat(trackedEvents[0].event).isEqualTo('Lead');"
+- name: Test CompleteRegistration Event
+  code: "// Test CompleteRegistration Event\n// 회원가입 완료 이벤트 테스트\nconst mockData =\
+    \ {\n    serviceId: '001-000-001',\n    businessType: 'lead',\n    eventType:\
+    \ 'CompleteRegistration',\n    scriptAlreadyLoaded: true,\n    debugMode: false\n\
+    \  };\n  \n  let trackedEvents = [];\n  \n  mock('createQueue', function(name)\
+    \ {\n    return function(cmd, eventName, params) {\n      if (cmd === 'track')\
+    \ {\n        trackedEvents.push({event: eventName, params: params});\n      }\n\
+    \    };\n  });\n  \n  mock('copyFromWindow', function(name) {\n    if (name ===\
+    \ '__dablena_gtm_loaded') return true;\n    return undefined;\n  });\n  \n  mock('injectScript',\
+    \ function(url, onSuccess) {\n    onSuccess();\n  });\n  \n  mock('makeTableMap',\
+    \ function() {\n    return {};\n  });\n  \n  runCode(mockData);\n  \n  assertThat(trackedEvents.length).isEqualTo(1);\n\
+    \  assertThat(trackedEvents[0].event).isEqualTo('CompleteRegistration');"
+- name: Test AddToCart Event
+  code: "// Test AddToCart Event\n// 장바구니 추가 이벤트 테스트\nconst mockData = {\n    serviceId:\
+    \ '001-000-001',\n    businessType: 'ecommerce',\n    eventType: 'AddToCart',\n\
+    \    scriptAlreadyLoaded: true,\n    debugMode: false\n  };\n  \n  let trackedEvents\
+    \ = [];\n  \n  mock('createQueue', function(name) {\n    return function(cmd,\
+    \ eventName, params) {\n      if (cmd === 'track') {\n        trackedEvents.push({event:\
+    \ eventName, params: params});\n      }\n    };\n  });\n  \n  mock('copyFromWindow',\
+    \ function(name) {\n    if (name === '__dablena_gtm_loaded') return true;\n  \
+    \  return undefined;\n  });\n  \n  mock('injectScript', function(url, onSuccess)\
+    \ {\n    onSuccess();\n  });\n  \n  mock('makeTableMap', function() {\n    return\
+    \ {};\n  });\n  \n  runCode(mockData);\n  \n  assertThat(trackedEvents.length).isEqualTo(1);\n\
+    \  assertThat(trackedEvents[0].event).isEqualTo('AddToCart');"
+- name: Test InitiateCheckout Event
+  code: "// Test InitiateCheckout Event\n// 체크아웃 시작 이벤트 테스트\nconst mockData = {\n\
+    \    serviceId: '001-000-001',\n    businessType: 'ecommerce',\n    eventType:\
+    \ 'InitiateCheckout',\n    scriptAlreadyLoaded: true,\n    debugMode: false\n\
+    \  };\n  \n  let trackedEvents = [];\n  \n  mock('createQueue', function(name)\
+    \ {\n    return function(cmd, eventName, params) {\n      if (cmd === 'track')\
+    \ {\n        trackedEvents.push({event: eventName, params: params});\n      }\n\
+    \    };\n  });\n  \n  mock('copyFromWindow', function(name) {\n    if (name ===\
+    \ '__dablena_gtm_loaded') return true;\n    return undefined;\n  });\n  \n  mock('injectScript',\
+    \ function(url, onSuccess) {\n    onSuccess();\n  });\n  \n  mock('makeTableMap',\
+    \ function() {\n    return {};\n  });\n  \n  runCode(mockData);\n  \n  assertThat(trackedEvents.length).isEqualTo(1);\n\
+    \  assertThat(trackedEvents[0].event).isEqualTo('InitiateCheckout');"
+- name: Test Purchase Without Value
+  code: "// Test Purchase Without Value\n// 구매 이벤트 테스트 (금액 없음)\nconst mockData = {\n\
+    \    serviceId: '001-000-001',\n    businessType: 'ecommerce',\n    eventType:\
+    \ 'Purchase',\n    addValue: false,\n    scriptAlreadyLoaded: true,\n    debugMode:\
+    \ false\n  };\n  \n  let trackedEvents = [];\n  \n  mock('createQueue', function(name)\
+    \ {\n    return function(cmd, eventName, params) {\n      if (cmd === 'track')\
+    \ {\n        trackedEvents.push({event: eventName, params: params});\n      }\n\
+    \    };\n  });\n  \n  mock('copyFromWindow', function(name) {\n    if (name ===\
+    \ '__dablena_gtm_loaded') return true;\n    return undefined;\n  });\n  \n  mock('injectScript',\
+    \ function(url, onSuccess) {\n    onSuccess();\n  });\n  \n  mock('makeTableMap',\
+    \ function() {\n    return {};\n  });\n  \n  runCode(mockData);\n  \n  assertThat(trackedEvents.length).isEqualTo(1);\n\
+    \  assertThat(trackedEvents[0].event).isEqualTo('Purchase');\n  assertThat(trackedEvents[0].params).isUndefined();"
+- name: Test Custom Event1
+  code: "// Test Custom Event1\n// 커스텀 이벤트1 테스트\nconst mockData = {\n    serviceId:\
+    \ '001-000-001',\n    businessType: 'custom',\n    eventType: 'custom',\n    customEventName:\
+    \ 'event1',\n    scriptAlreadyLoaded: true,\n    debugMode: false\n  };\n  \n\
+    \  let trackedEvents = [];\n  \n  mock('createQueue', function(name) {\n    return\
+    \ function(cmd, eventName, params) {\n      if (cmd === 'track') {\n        trackedEvents.push({event:\
+    \ eventName, params: params});\n      }\n    };\n  });\n  \n  mock('copyFromWindow',\
+    \ function(name) {\n    if (name === '__dablena_gtm_loaded') return true;\n  \
+    \  return undefined;\n  });\n  \n  mock('injectScript', function(url, onSuccess)\
+    \ {\n    onSuccess();\n  });\n  \n  mock('makeTableMap', function() {\n    return\
+    \ {};\n  });\n  \n  runCode(mockData);\n  \n  assertThat(trackedEvents.length).isEqualTo(1);\n\
+    \  assertThat(trackedEvents[0].event).isEqualTo('event1');"
+- name: Test Custom Event2
+  code: "// Test Custom Event2\n// 커스텀 이벤트2 테스트\nconst mockData = {\n    serviceId:\
+    \ '001-000-001',\n    businessType: 'custom',\n    eventType: 'custom',\n    customEventName:\
+    \ 'event2',\n    scriptAlreadyLoaded: true,\n    debugMode: false\n  };\n  \n\
+    \  let trackedEvents = [];\n  \n  mock('createQueue', function(name) {\n    return\
+    \ function(cmd, eventName, params) {\n      if (cmd === 'track') {\n        trackedEvents.push({event:\
+    \ eventName, params: params});\n      }\n    };\n  });\n  \n  mock('copyFromWindow',\
+    \ function(name) {\n    if (name === '__dablena_gtm_loaded') return true;\n  \
+    \  return undefined;\n  });\n  \n  mock('injectScript', function(url, onSuccess)\
+    \ {\n    onSuccess();\n  });\n  \n  mock('makeTableMap', function() {\n    return\
+    \ {};\n  });\n  \n  runCode(mockData);\n  \n  assertThat(trackedEvents.length).isEqualTo(1);\n\
+    \  assertThat(trackedEvents[0].event).isEqualTo('event2');"
+- name: Test Custom Event3
+  code: "// Test Custom Event3\n// 커스텀 이벤트3 테스트\nconst mockData = {\n    serviceId:\
+    \ '001-000-001',\n    businessType: 'custom',\n    eventType: 'custom',\n    customEventName:\
+    \ 'event3',\n    scriptAlreadyLoaded: true,\n    debugMode: false\n  };\n  \n\
+    \  let trackedEvents = [];\n  \n  mock('createQueue', function(name) {\n    return\
+    \ function(cmd, eventName, params) {\n      if (cmd === 'track') {\n        trackedEvents.push({event:\
+    \ eventName, params: params});\n      }\n    };\n  });\n  \n  mock('copyFromWindow',\
+    \ function(name) {\n    if (name === '__dablena_gtm_loaded') return true;\n  \
+    \  return undefined;\n  });\n  \n  mock('injectScript', function(url, onSuccess)\
+    \ {\n    onSuccess();\n  });\n  \n  mock('makeTableMap', function() {\n    return\
+    \ {};\n  });\n  \n  runCode(mockData);\n  \n  assertThat(trackedEvents.length).isEqualTo(1);\n\
+    \  assertThat(trackedEvents[0].event).isEqualTo('event3');"
+- name: Test Multiple Custom Parameters
+  code: "// Test Multiple Custom Parameters\n// 다중 커스텀 파라미터 테스트\nconst mockData =\
+    \ {\n    serviceId: '001-000-001',\n    businessType: 'lead',\n    eventType:\
+    \ 'Lead',\n    addCustomParams: true,\n    customParams: [\n      {name: 'user_id',\
+    \ value: '12345'},\n      {name: 'campaign', value: 'summer_2024'},\n      {name:\
+    \ 'referrer', value: 'google'},\n      {name: 'page_type', value: 'landing'}\n\
+    \    ],\n    scriptAlreadyLoaded: true,\n    debugMode: false\n  };\n  \n  let\
+    \ trackedEvents = [];\n  \n  mock('createQueue', function(name) {\n    return\
+    \ function(cmd, eventName, params) {\n      if (cmd === 'track') {\n        trackedEvents.push({event:\
+    \ eventName, params: params});\n      }\n    };\n  });\n  \n  mock('copyFromWindow',\
+    \ function(name) {\n    if (name === '__dablena_gtm_loaded') return true;\n  \
+    \  return undefined;\n  });\n  \n  mock('makeTableMap', function(table, keyColumn,\
+    \ valueColumn) {\n    const result = {};\n    for (let i = 0; i < table.length;\
+    \ i++) {\n      result[table[i][keyColumn]] = table[i][valueColumn];\n    }\n\
+    \    return result;\n  });\n  \n  mock('injectScript', function(url, onSuccess)\
+    \ {\n    onSuccess();\n  });\n  \n  runCode(mockData);\n  \n  assertThat(trackedEvents.length).isEqualTo(1);\n\
+    \  assertThat(trackedEvents[0].event).isEqualTo('Lead');\n  assertThat(trackedEvents[0].params.user_id).isEqualTo('12345');\n\
+    \  assertThat(trackedEvents[0].params.campaign).isEqualTo('summer_2024');\n  assertThat(trackedEvents[0].params.referrer).isEqualTo('google');\n\
+    \  assertThat(trackedEvents[0].params.page_type).isEqualTo('landing');"
+- name: Test Service ID Format Validation
+  code: "// Test Service ID Format Validation\n// 서비스 ID 형식 검증 테스트\nconst mockData\
+    \ = {\n    serviceId: '001-000-001',  // 올바른 형식\n    businessType: 'lead',\n \
+    \   eventType: 'PageView',\n    scriptAlreadyLoaded: false,\n    debugMode: false\n\
+    \  };\n  \n  let initServiceId = '';\n  \n  mock('createQueue', function(name)\
+    \ {\n    return function(cmd, id) {\n      if (cmd === 'init') {\n        initServiceId\
+    \ = id;\n      }\n    };\n  });\n  \n  mock('copyFromWindow', function(name) {\n\
+    \    if (name === '__dablena_gtm_loaded') return false;\n    return undefined;\n\
+    \  });\n  \n  mock('setInWindow', function() {\n    return true;\n  });\n  \n\
+    \  mock('injectScript', function(url, onSuccess) {\n    onSuccess();\n  });\n\
+    \  \n  mock('makeTableMap', function() {\n    return {};\n  });\n  \n  runCode(mockData);\n\
+    \  \n  // 올바른 형식의 서비스 ID가 init에 전달되었는지 확인\n  assertThat(initServiceId).isEqualTo('001-000-001');"
+- name: Test First Visit with PageView Auto-fire
+  code: "// Test First Visit with PageView Auto-fire\n// 첫 방문 시 PageView 자동 실행 테스트\
+    \nconst mockData = {\n    serviceId: '001-000-001',\n    businessType: 'lead',\n\
+    \    eventType: 'Lead',  // PageView가 아닌 다른 이벤트\n    scriptAlreadyLoaded: false,\n\
+    \    debugMode: true\n  };\n  \n  let trackedEvents = [];\n  let logMessages =\
+    \ [];\n  \n  mock('createQueue', function(name) {\n    return function(cmd, eventName,\
+    \ params) {\n      if (cmd === 'track') {\n        trackedEvents.push({event:\
+    \ eventName, params: params});\n      }\n    };\n  });\n  \n  mock('copyFromWindow',\
+    \ function(name) {\n    if (name === '__dablena_gtm_loaded') return false;  //\
+    \ 첫 방문\n    return undefined;\n  });\n  \n  mock('setInWindow', function() {\n\
+    \    return true;\n  });\n  \n  mock('logToConsole', function(msg) {\n    logMessages.push(msg);\n\
+    \  });\n  \n  mock('injectScript', function(url, onSuccess) {\n    onSuccess();\n\
+    \  });\n  \n  mock('makeTableMap', function() {\n    return {};\n  });\n  \n \
+    \ runCode(mockData);\n  \n  // PageView와 Lead 이벤트 모두 추적되어야 함\n  assertThat(trackedEvents.length).isEqualTo(2);\n\
+    \  assertThat(trackedEvents[0].event).isEqualTo('PageView');\n  assertThat(trackedEvents[1].event).isEqualTo('Lead');"
 
 
 ___NOTES___
