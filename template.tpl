@@ -307,12 +307,12 @@ ___TEMPLATE_PARAMETERS___
 ___SANDBOXED_JS_FOR_WEB_TEMPLATE___
 
 // Require necessary APIs
-const createQueue = require('createQueue');
 const copyFromWindow = require('copyFromWindow');
 const setInWindow = require('setInWindow');
 const injectScript = require('injectScript');
 const makeTableMap = require('makeTableMap');
 const log = require('logToConsole');
+const createArgumentsQueue = require('createArgumentsQueue');
 
 // Get user inputs
 const serviceId = data.serviceId;
@@ -324,30 +324,22 @@ const customParams = data.customParams ? makeTableMap(data.customParams, 'name',
 const scriptAlreadyLoaded = data.scriptAlreadyLoaded;
 const debugMode = data.debugMode;
 
-// Create or get the dablena queue
-const dablena = createQueue('dablena');
+// Create the dablena queue using GTM's createArgumentsQueue API
+const existingDablena = copyFromWindow('dablena');
+if (debugMode) {
+  log('Dable GTM: existingDablena:', !!existingDablena);
+}
 
-// Check if script is already loaded
-const isLoaded = copyFromWindow('__dablena_gtm_loaded');
-
-// Initialize Dable only once per page
-if (!isLoaded && !scriptAlreadyLoaded) {
-  if (debugMode) {
-    log('Dable GTM: Initializing with Service ID:', serviceId);
-  }
-  
-  // Mark as loaded
-  setInWindow('__dablena_gtm_loaded', true, true);
-  
-  // Initialize Dable
-  dablena('init', serviceId);
-  
-  // Always fire PageView on first load
-  dablena('track', 'PageView');
+let dablena;
+if (!existingDablena) {
+  // Create dablena function and queue array exactly like native implementation
+  dablena = createArgumentsQueue('dablena', 'dablena.q');
   
   if (debugMode) {
-    log('Dable GTM: PageView event sent');
+    log('Dable GTM: Created dablena queue using createArgumentsQueue');
   }
+} else {
+  dablena = existingDablena;
 }
 
 // Prepare event parameters
@@ -368,7 +360,39 @@ for (let key in customParams) {
   }
 }
 
-// Send the event (if not PageView, as it's already sent on init)
+// Check if script is already loaded
+const isLoaded = copyFromWindow('__dablena_gtm_loaded');
+
+// Debug: Check if dablena function works properly
+if (debugMode) {
+  log('Dable GTM: dablena function exists:', !!dablena);
+  if (dablena) {
+    log('Dable GTM: dablena type:', typeof dablena);
+    log('Dable GTM: Ready to queue commands');
+  }
+}
+
+// Initialize Dable only once per page
+if (!isLoaded && !scriptAlreadyLoaded) {
+  if (debugMode) {
+    log('Dable GTM: Initializing with Service ID:', serviceId);
+  }
+  
+  // Mark as loaded
+  setInWindow('__dablena_gtm_loaded', true, true);
+  
+  // Initialize Dable - this will be queued
+  dablena('init', serviceId);
+  
+  // Always fire PageView on first load - this will be queued
+  dablena('track', 'PageView');
+  
+  if (debugMode) {
+    log('Dable GTM: Commands queued successfully');
+  }
+}
+
+// Send the current event (if not PageView, as it's already sent on init)
 if (eventType !== 'PageView' || isLoaded || scriptAlreadyLoaded) {
   // Check if eventParams has any properties
   let hasParams = false;
@@ -382,17 +406,17 @@ if (eventType !== 'PageView' || isLoaded || scriptAlreadyLoaded) {
   if (hasParams) {
     dablena('track', eventType, eventParams);
     if (debugMode) {
-      log('Dable GTM: Event sent with parameters:', eventType, eventParams);
+      log('Dable GTM: Event queued with parameters:', eventType, eventParams);
     }
   } else {
     dablena('track', eventType);
     if (debugMode) {
-      log('Dable GTM: Event sent:', eventType);
+      log('Dable GTM: Event queued:', eventType);
     }
   }
 }
 
-// Load the Dable script
+// Load the Dable script - this should process the queue automatically
 const scriptUrl = 'https://static.dable.io/dist/dablena.min.js';
 
 injectScript(scriptUrl, 
@@ -490,6 +514,45 @@ ___WEB_PERMISSIONS___
                   {
                     "type": 1,
                     "string": "__dablena_gtm_loaded"
+                  },
+                  {
+                    "type": 8,
+                    "boolean": true
+                  },
+                  {
+                    "type": 8,
+                    "boolean": true
+                  },
+                  {
+                    "type": 8,
+                    "boolean": false
+                  }
+                ]
+              },
+              {
+                "type": 3,
+                "mapKey": [
+                  {
+                    "type": 1,
+                    "string": "key"
+                  },
+                  {
+                    "type": 1,
+                    "string": "read"
+                  },
+                  {
+                    "type": 1,
+                    "string": "write"
+                  },
+                  {
+                    "type": 1,
+                    "string": "execute"
+                  }
+                ],
+                "mapValue": [
+                  {
+                    "type": 1,
+                    "string": "dablena.q"
                   },
                   {
                     "type": 8,
