@@ -1,0 +1,247 @@
+name: Release GTM Template
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version number (e.g., v1.0.0)'
+        required: true
+        type: string
+      release_notes:
+        description: 'Release notes'
+        required: true
+        type: string
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 0
+
+      - name: Validate version format
+        run: |
+          if [[ ! "${{ github.event.inputs.version }}" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "Invalid version format. Use format: v1.0.0"
+            exit 1
+          fi
+
+      - name: Check if tag already exists
+        run: |
+          if git tag -l | grep -q "^${{ github.event.inputs.version }}$"; then
+            echo "Tag ${{ github.event.inputs.version }} already exists"
+            exit 1
+          fi
+
+      - name: Update template.tpl with version timestamp
+        run: |
+          VERSION="${{ github.event.inputs.version }}"
+          TIMESTAMP=$(date -u '+%Y-%m-%d %H:%M:%S UTC')
+          
+          # Add version comment to template.tpl header
+          if grep -q "___TEMPLATE_VERSION___" template.tpl; then
+            # Update existing version comment
+            sed -i "s/___TEMPLATE_VERSION___.*/___TEMPLATE_VERSION___/g" template.tpl
+            sed -i "/___TEMPLATE_VERSION___/c\\
+          ___TEMPLATE_VERSION___\\
+          // Template Version: ${VERSION}\\
+          // Released: ${TIMESTAMP}\\
+          ___TEMPLATE_VERSION___" template.tpl
+          else
+            # Add version comment to file header if not exists
+            cat > temp_template.tpl << EOF
+          ___TEMPLATE_VERSION___
+          // Template Version: ${VERSION}
+          // Released: ${TIMESTAMP}
+          ___TEMPLATE_VERSION___
+          
+          EOF
+            cat template.tpl >> temp_template.tpl
+            mv temp_template.tpl template.tpl
+          fi
+
+      - name: Fix metadata filename and update content
+        run: |
+          # Fix filename (metadta.yml -> metadata.yaml)
+          if [ -f "metadta.yml" ]; then
+            mv metadta.yml metadata.yaml
+          fi
+          
+          # Get current commit SHA from Git
+          COMMIT_SHA=$(git rev-parse HEAD)
+          VERSION="${{ github.event.inputs.version }}"
+          RELEASE_NOTES="${{ github.event.inputs.release_notes }}"
+          TIMESTAMP=$(date -u '+%Y-%m-%d')
+          
+          # Update metadata.yaml
+          cat > metadata.yaml << EOF
+          homepage: "https://www.dable.io"
+          documentation: "https://github.com/teamdable/dable-conversion-gtm/blob/main/README.md"
+          versions:
+            - sha: ${COMMIT_SHA}
+              changeNotes: "${RELEASE_NOTES}"
+              releaseDate: "${TIMESTAMP}"
+              version: "${VERSION}"
+          EOF
+          
+          # Add existing versions if available
+          if [ -f "metadata.yaml.bak" ]; then
+            echo "  # Previous versions preserved" >> metadata.yaml
+            grep "^  - sha:" metadata.yaml.bak >> metadata.yaml || true
+          fi
+
+      - name: Commit changes
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          
+          git add template.tpl metadata.yaml
+          git commit -m "Release ${{ github.event.inputs.version }}
+
+          ${{ github.event.inputs.release_notes }}
+
+          🤖 Generated with GitHub Actions
+          
+          Co-Authored-By: GitHub Actions <noreply@github.com>"
+
+      - name: Get final commit SHA
+        id: get_sha
+        run: |
+          FINAL_SHA=$(git rev-parse HEAD)
+          echo "final_sha=${FINAL_SHA}" >> $GITHUB_OUTPUT
+
+      - name: Update metadata.yaml with final SHA
+        run: |
+          FINAL_SHA="${{ steps.get_sha.outputs.final_sha }}"
+          VERSION="${{ github.event.inputs.version }}"
+          RELEASE_NOTES="${{ github.event.inputs.release_notes }}"
+          TIMESTAMP=$(date -u '+%Y-%m-%d')
+          
+          # Update metadata.yaml with final SHA
+          cat > metadata.yaml << EOF
+          homepage: "https://www.dable.io"
+          documentation: "https://github.com/teamdable/dable-conversion-gtm/blob/main/README.md"
+          versions:
+            - sha: ${FINAL_SHA}
+              changeNotes: "${RELEASE_NOTES}"
+              releaseDate: "${TIMESTAMP}"
+              version: "${VERSION}"
+          EOF
+
+      - name: Amend commit with final metadata
+        run: |
+          git add metadata.yaml
+          git commit --amend --no-edit
+
+      - name: Create and push tag
+        run: |
+          git tag -a "${{ github.event.inputs.version }}" -m "Release ${{ github.event.inputs.version }}
+
+          ${{ github.event.inputs.release_notes }}"
+          
+          git push origin main
+          git push origin "${{ github.event.inputs.version }}"
+
+      - name: Create GitHub Release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.event.inputs.version }}
+          release_name: ${{ github.event.inputs.version }}
+          body: |
+            ## Release Notes
+            
+            ${{ github.event.inputs.release_notes }}
+            
+            ## GTM Template Information
+            
+            - **Template SHA**: `${{ steps.get_sha.outputs.final_sha }}`
+            - **Release Date**: $(date -u '+%Y-%m-%d')
+            - **Documentation**: [README.md](https://github.com/teamdable/dable-conversion-gtm/blob/main/README.md)
+            
+            ## Installation
+            
+            1. Open GTM container and select **Tags** > **New**
+            2. Select **Tag Configuration** > **Community Template Gallery**  
+            3. Search for "Dable Conversion" and select
+            4. Complete required settings and save
+            
+            ---
+            
+            🤖 Generated with [GitHub Actions](https://github.com/features/actions)
+          draft: false
+          prerelease: false
+
+      - name: Update CHANGELOG.md
+        run: |
+          VERSION="${{ github.event.inputs.version }}"
+          RELEASE_NOTES="${{ github.event.inputs.release_notes }}"
+          TIMESTAMP=$(date -u '+%Y-%m-%d')
+          FINAL_SHA="${{ steps.get_sha.outputs.final_sha }}"
+          
+          # Create CHANGELOG.md if not exists
+          if [ ! -f "CHANGELOG.md" ]; then
+            cat > CHANGELOG.md << EOF
+          # Changelog
+          
+          All notable changes to this GTM template will be documented in this file.
+          
+          The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
+          and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+          
+          EOF
+          fi
+          
+          # Add new version to top of CHANGELOG
+          cat > temp_changelog.md << EOF
+          # Changelog
+          
+          All notable changes to this GTM template will be documented in this file.
+          
+          The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
+          and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+          
+          ## [${VERSION}] - ${TIMESTAMP}
+          
+          ${RELEASE_NOTES}
+          
+          - **SHA**: \`${FINAL_SHA}\`
+          - **Template Updated**: Yes
+          - **Metadata Updated**: Yes
+          
+          EOF
+          
+          # Append existing changelog content (excluding header)
+          if [ -f "CHANGELOG.md" ]; then
+            tail -n +8 CHANGELOG.md >> temp_changelog.md 2>/dev/null || true
+          fi
+          
+          mv temp_changelog.md CHANGELOG.md
+
+      - name: Commit CHANGELOG.md
+        run: |
+          git add CHANGELOG.md
+          git commit -m "Update CHANGELOG.md for ${{ github.event.inputs.version }}"
+          git push origin main
+
+      - name: Summary
+        run: |
+          echo "✅ Release ${{ github.event.inputs.version }} completed successfully!"
+          echo ""
+          echo "📋 Summary:"
+          echo "- Version: ${{ github.event.inputs.version }}"
+          echo "- SHA: ${{ steps.get_sha.outputs.final_sha }}"
+          echo "- Files updated: template.tpl, metadata.yaml, CHANGELOG.md"
+          echo "- Tag created: ${{ github.event.inputs.version }}"
+          echo "- GitHub Release created: ✅"
+          echo ""
+          echo "🔗 Links:"
+          echo "- Release: ${{ github.server_url }}/${{ github.repository }}/releases/tag/${{ github.event.inputs.version }}"
+          echo "- Commit: ${{ github.server_url }}/${{ github.repository }}/commit/${{ steps.get_sha.outputs.final_sha }}"
