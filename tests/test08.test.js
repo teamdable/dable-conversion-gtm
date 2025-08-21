@@ -2,7 +2,6 @@
 // 잠재고객 이벤트 테스트
 const mockData = {
     serviceId: '001-000-001',
-    businessType: 'lead',
     eventType: 'Lead',
     scriptAlreadyLoaded: true,
     debugMode: false

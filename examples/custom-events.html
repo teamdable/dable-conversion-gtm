@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>Dable Conversion Custom Events Test</title>
+    
+    <!-- Google Tag Manager - Official Installation Code -->
+    <!-- https://developers.google.com/tag-platform/tag-manager/datalayer -->
+    <script>
+      window.dataLayer = window.dataLayer || [];
+    </script>
+    <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+    new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+    j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+    'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+    })(window,document,'script','dataLayer','GTM-XXXXXXX');</script>
+    <!-- End Google Tag Manager -->
+    
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        button { padding: 10px 20px; margin: 5px; font-size: 16px; background: #9b59b6; color: white; border: none; }
+        .log { background: #f4f4f4; padding: 10px; margin-top: 20px; font-family: monospace; white-space: pre-wrap; }
+    </style>
+</head>
+<body>
+    <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-XXXXXXX"
+    height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+
+    <h1>Dable Conversion 커스텀 이벤트 테스트</h1>
+
+    <h2>커스텀 이벤트 (템플릿에서 선택 가능)</h2>
+    <button onclick="testEvent1()">Event 1</button>
+    <button onclick="testEvent2()">Event 2</button>
+    <button onclick="testEvent3()">Event 3</button>
+    
+    <h2>로그</h2>
+    <button onclick="clearLog()">지우기</button>
+    <div id="log" class="log">로그가 여기에 표시됩니다...</div>
+
+    <script>
+        // DataLayer는 이미 head에서 초기화됨
+        
+        function log(message) {
+            const logDiv = document.getElementById('log');
+            const timestamp = new Date().toLocaleTimeString();
+            logDiv.textContent += `[${timestamp}] ${message}\n`;
+        }
+
+        function testEvent1() {
+            dataLayer.push({ 'event': 'dable_event1' });
+            log('Custom Event 1 전송');
+        }
+
+        function testEvent2() {
+            dataLayer.push({ 'event': 'dable_event2' });
+            log('Custom Event 2 전송');
+        }
+
+        function testEvent3() {
+            dataLayer.push({ 'event': 'dable_event3' });
+            log('Custom Event 3 전송');
+        }
+
+        function clearLog() {
+            document.getElementById('log').textContent = '로그가 여기에 표시됩니다...\n';
+        }
+
+        window.addEventListener('load', function() {
+            log('페이지 로드 완료 - 커스텀 이벤트 테스트 준비');
+            log('참고: GTM 태그에서 Event Type을 Custom Event로 설정하고 해당 이벤트명을 선택하세요');
+        });
+    </script>
+</body>
+</html>

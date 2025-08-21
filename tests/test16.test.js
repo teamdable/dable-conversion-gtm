@@ -2,7 +2,6 @@
 // 다중 커스텀 파라미터 테스트
 const mockData = {
     serviceId: '001-000-001',
-    businessType: 'lead',
     eventType: 'Lead',
     addCustomParams: true,
     customParams: [

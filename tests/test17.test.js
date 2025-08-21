@@ -2,7 +2,6 @@
 // 서비스 ID 형식 검증 테스트
 const mockData = {
     serviceId: '001-000-001',  // 올바른 형식
-    businessType: 'lead',
     eventType: 'PageView',
     scriptAlreadyLoaded: false,
     debugMode: false

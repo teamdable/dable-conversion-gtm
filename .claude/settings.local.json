@@ -1,7 +1,16 @@
 {
   "permissions": {
     "allow": [
-      "WebSearch"
+      "WebSearch",
+      "Bash(rm:*)",
+      "Bash(find:*)",
+      "Bash(for file in /Users/sungcheol/github/dable/dable-Conversion/tests/*.test.js)",
+      "Bash(do sed -i '' '/businessType:/d' \"$file\")",
+      "Bash(done)",
+      "Bash(grep:*)",
+      "Bash(sed:*)",
+      "WebFetch(domain:support.google.com)",
+      "WebFetch(domain:developers.google.com)"
     ],
     "deny": [],
     "ask": []

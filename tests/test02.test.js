@@ -1,11 +1,8 @@
 // Test Purchase Event with Value
 const mockData = {
     serviceId: '001-000-001',
-    businessType: 'ecommerce',
     eventType: 'Purchase',
-    addValue: true,
     value: '15000',
-    addCurrency: true,
     currency: 'KRW',
     scriptAlreadyLoaded: true,
     debugMode: false

@@ -8,10 +8,9 @@ const createArgumentsQueue = require('createArgumentsQueue');
 
 // Get user inputs
 const serviceId = data.serviceId;
-const businessType = data.businessType;
 const eventType = data.eventType === 'custom' ? data.customEventName : data.eventType;
-const value = data.value;
-const currency = data.currency;
+const value = data.value || undefined;
+const currency = data.currency || undefined;
 const customParams = data.customParams ? makeTableMap(data.customParams, 'name', 'value') : {};
 const scriptAlreadyLoaded = data.scriptAlreadyLoaded;
 const debugMode = data.debugMode;
@@ -52,11 +51,19 @@ function prepareEventParams() {
   let eventParams = {};
 
   // Handle Purchase event with value and currency
-  if (eventType === 'Purchase' && value) {
-    eventParams.value = value;
-    if (currency) {
-      eventParams.currency = currency;
+  if (eventType === 'Purchase') {
+    if (!value) {
+      log('Dable GTM Error: Purchase event requires a value parameter');
+      data.gtmOnFailure();
+      return eventParams;
     }
+    if (!currency) {
+      log('Dable GTM Error: Purchase event requires a currency parameter');
+      data.gtmOnFailure();
+      return eventParams;
+    }
+    eventParams.value = value;
+    eventParams.currency = currency;
   }
 
   // Add custom parameters
@@ -84,11 +91,6 @@ function initializeTracking(dablena) {
     // Initialize Dable - this will be queued
     dablena('init', serviceId);
     
-    // Fire PageView on first load only if explicitly requested
-    if (eventType === 'PageView') {
-      dablena('track', 'PageView');
-    }
-    
     if (debugMode) {
       log('Dable GTM: Commands queued successfully');
     }
@@ -98,28 +100,25 @@ function initializeTracking(dablena) {
 }
 
 // Function to track the current event
-function trackEvent(dablena, eventParams, isLoaded) {
-  // Send the current event (skip if PageView was already sent on init)
-  if (!(eventType === 'PageView' && !isLoaded && !scriptAlreadyLoaded)) {
-    // Check if eventParams has any properties
-    let hasParams = false;
-    for (let key in eventParams) {
-      if (eventParams.hasOwnProperty(key)) {
-        hasParams = true;
-        break;
-      }
+function trackEvent(dablena, eventParams) {
+  // Check if eventParams has any properties
+  let hasParams = false;
+  for (let key in eventParams) {
+    if (eventParams.hasOwnProperty(key)) {
+      hasParams = true;
+      break;
     }
-    
-    if (hasParams) {
-      dablena('track', eventType, eventParams);
-      if (debugMode) {
-        log('Dable GTM: Event queued with parameters:', eventType, eventParams);
-      }
-    } else {
-      dablena('track', eventType);
-      if (debugMode) {
-        log('Dable GTM: Event queued:', eventType);
-      }
+  }
+  
+  if (hasParams) {
+    dablena('track', eventType, eventParams);
+    if (debugMode) {
+      log('Dable GTM: Event queued with parameters:', eventType, eventParams);
+    }
+  } else {
+    dablena('track', eventType);
+    if (debugMode) {
+      log('Dable GTM: Event queued:', eventType);
     }
   }
 }
@@ -146,17 +145,17 @@ function loadScript(scriptUrl) {
 // Dable script URL
 const scriptUrl = 'https://static.dable.io/dist/dablena.min.js';
 
-// 1. Initialize dablena queue
+// 1. Load the Dable script first (parallel loading)
+loadScript(scriptUrl);
+
+// 2. Initialize dablena queue
 const dablena = initializeDablena();
 
-// 2. Prepare event parameters
+// 3. Prepare event parameters
 const eventParams = prepareEventParams();
 
-// 3. Initialize tracking (first load setup)
-const isLoaded = initializeTracking(dablena);
+// 4. Initialize tracking (first load setup)
+initializeTracking(dablena);
 
-// 4. Track the current event
-trackEvent(dablena, eventParams, isLoaded);
-
-// 5. Load the Dable script
-loadScript(scriptUrl);
+// 5. Track the current event
+trackEvent(dablena, eventParams);

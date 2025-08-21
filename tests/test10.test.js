@@ -2,7 +2,6 @@
 // 장바구니 추가 이벤트 테스트
 const mockData = {
     serviceId: '001-000-001',
-    businessType: 'ecommerce',
     eventType: 'AddToCart',
     scriptAlreadyLoaded: true,
     debugMode: false

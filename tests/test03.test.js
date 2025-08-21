@@ -1,9 +1,8 @@
 // Test Custom Event
 const mockData = {
     serviceId: '001-000-001',
-    businessType: 'custom',
     eventType: 'custom',
-    customEventName: 'video_complete',
+    customEventName: 'event1',
     scriptAlreadyLoaded: true,
     debugMode: false
   };
@@ -33,4 +32,4 @@ const mockData = {
   
   runCode(mockData);
   
-  assertThat(eventTracked).isEqualTo('video_complete');
+  assertThat(eventTracked).isEqualTo('event1');

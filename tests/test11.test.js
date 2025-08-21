@@ -2,7 +2,6 @@
 // 체크아웃 시작 이벤트 테스트
 const mockData = {
     serviceId: '001-000-001',
-    businessType: 'ecommerce',
     eventType: 'InitiateCheckout',
     scriptAlreadyLoaded: true,
     debugMode: false

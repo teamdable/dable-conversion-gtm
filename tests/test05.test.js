@@ -1,7 +1,6 @@
 // Test Script Already Loaded Check
 const mockData = {
     serviceId: '001-000-001',
-    businessType: 'lead',
     eventType: 'ViewContent',
     scriptAlreadyLoaded: false,
     debugMode: false

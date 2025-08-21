@@ -2,7 +2,6 @@
 // 커스텀 이벤트2 테스트
 const mockData = {
     serviceId: '001-000-001',
-    businessType: 'custom',
     eventType: 'custom',
     customEventName: 'event2',
     scriptAlreadyLoaded: true,

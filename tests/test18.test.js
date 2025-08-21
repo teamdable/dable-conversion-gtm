@@ -2,7 +2,6 @@
 // 첫 방문 시 PageView가 아닌 이벤트 테스트
 const mockData = {
     serviceId: '001-000-001',
-    businessType: 'lead',
     eventType: 'Lead',  // PageView가 아닌 다른 이벤트
     scriptAlreadyLoaded: false,
     debugMode: true

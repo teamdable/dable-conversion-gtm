@@ -2,7 +2,6 @@
 // 검색 이벤트 테스트
 const mockData = {
     serviceId: '001-000-001',
-    businessType: 'lead',
     eventType: 'Search',
     scriptAlreadyLoaded: true,
     debugMode: false

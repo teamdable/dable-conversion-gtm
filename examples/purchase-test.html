@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dable Conversion Purchase Test</title>
+    
+    <!-- Google Tag Manager - Official Installation Code -->
+    <!-- https://developers.google.com/tag-platform/tag-manager/datalayer -->
+    <script>
+      window.dataLayer = window.dataLayer || [];
+    </script>
+    <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+    new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+    j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+    'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+    })(window,document,'script','dataLayer','GTM-XXXXXXX');</script>
+    <!-- End Google Tag Manager -->
+    
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        button { padding: 10px 20px; margin: 5px; font-size: 16px; }
+        .purchase { background: #e74c3c; color: white; border: none; }
+        .log { background: #f4f4f4; padding: 10px; margin-top: 20px; font-family: monospace; white-space: pre-wrap; }
+        .alert { background: #f39c12; color: white; padding: 10px; margin: 10px 0; }
+    </style>
+</head>
+<body>
+    <!-- Google Tag Manager (noscript) -->
+    <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-XXXXXXX"
+    height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+    <!-- End Google Tag Manager (noscript) -->
+
+    <h1>Dable Conversion Purchase Test</h1>
+    
+    <div class="alert">
+        <strong>설정 필요:</strong> GTM-XXXXXXX를 실제 GTM ID로 변경하고, GTM에서 purchase_value, purchase_currency 변수를 생성하세요.
+    </div>
+
+    <h2>Purchase 이벤트 테스트</h2>
+    <button class="purchase" onclick="testPurchase()">구매 완료 (KRW 15,000)</button>
+    <button class="purchase" onclick="testPurchaseUSD()">구매 완료 (USD 12)</button>
+    
+    <h2>DataLayer 로그</h2>
+    <button onclick="clearLog()">로그 지우기</button>
+    <div id="log" class="log">로그가 여기에 표시됩니다...</div>
+
+    <script>
+        // DataLayer는 이미 head에서 초기화됨
+        
+        // 로그 함수
+        function log(message, data) {
+            const logDiv = document.getElementById('log');
+            const timestamp = new Date().toLocaleTimeString();
+            let logMessage = `[${timestamp}] ${message}`;
+            if (data) {
+                logMessage += '\n' + JSON.stringify(data, null, 2);
+            }
+            logDiv.textContent += logMessage + '\n\n';
+        }
+
+        // Purchase 테스트 (KRW)
+        function testPurchase() {
+            dataLayer.push({
+                'purchase_value': 15000,
+                'purchase_currency': 'KRW',
+                'transaction_id': 'TXN_' + Date.now(),
+                'event': 'purchase_completed'
+            });
+            log('Purchase 이벤트 전송 (KRW)', {
+                purchase_value: 15000,
+                purchase_currency: 'KRW'
+            });
+        }
+
+        // Purchase 테스트 (USD)
+        function testPurchaseUSD() {
+            dataLayer.push({
+                'purchase_value': 12,
+                'purchase_currency': 'USD',
+                'transaction_id': 'TXN_' + Date.now(),
+                'event': 'purchase_completed'
+            });
+            log('Purchase 이벤트 전송 (USD)', {
+                purchase_value: 12,
+                purchase_currency: 'USD'
+            });
+        }
+
+        // 로그 지우기
+        function clearLog() {
+            document.getElementById('log').textContent = '로그가 여기에 표시됩니다...\n';
+        }
+
+        // 페이지 로드 시
+        window.addEventListener('load', function() {
+            log('페이지 로드 완료');
+            log('GTM 설정 체크리스트:', {
+                'GTM ID': '실제 GTM 컨테이너 ID로 변경 필요',
+                'GTM 변수': 'purchase_value, purchase_currency 생성 필요',
+                'Dable 태그': '{{purchase_value}}, {{purchase_currency}} 사용',
+                '트리거': 'purchase_completed 이벤트'
+            });
+        });
+    </script>
+</body>
+</html>

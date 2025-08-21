@@ -1,7 +1,6 @@
 // Test Debug Mode
 const mockData = {
     serviceId: '001-000-001',
-    businessType: 'lead',
     eventType: 'Lead',
     scriptAlreadyLoaded: false,
     debugMode: true  // 디버그 모드 활성화
