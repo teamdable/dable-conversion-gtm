@@ -1,9 +1,4 @@
-___TEMPLATE_VERSION___
-// Template Version: v1.0.0
-// Released: 2025-08-21 05:41:24 UTC
-___TEMPLATE_VERSION___
-
-﻿___INFO___
+___INFO___
 
 {
   "displayName": "Dable Conversion Script",
