@@ -42,28 +42,25 @@ jobs:
       - name: Update template.tpl with version timestamp
         run: |
           VERSION="${{ github.event.inputs.version }}"
-          TIMESTAMP=$(date -u '+%Y-%m-%d %H:%M:%S UTC')
+          TIMESTAMP=$(date '+%Y. %m. %d. %p %l:%M:%S')
           
-          # Add version comment to template.tpl header
-          if grep -q "___TEMPLATE_VERSION___" template.tpl; then
-            # Update existing version comment
-            sed -i "s/___TEMPLATE_VERSION___.*/___TEMPLATE_VERSION___/g" template.tpl
-            sed -i "/___TEMPLATE_VERSION___/c\\
-          ___TEMPLATE_VERSION___\\
-          // Template Version: ${VERSION}\\
-          // Released: ${TIMESTAMP}\\
-          ___TEMPLATE_VERSION___" template.tpl
+          # Update the ___NOTES___ section with new timestamp
+          if grep -q "___NOTES___" template.tpl; then
+            # Find and update the "Created on" line in ___NOTES___ section
+            if grep -q "Created on" template.tpl; then
+              # Update existing "Created on" line
+              sed -i "/Created on/c\\Created on ${TIMESTAMP}" template.tpl
+            else
+              # Add "Created on" line after ___NOTES___
+              sed -i "/___NOTES___/a\\\\nCreated on ${TIMESTAMP}" template.tpl
+            fi
           else
-            # Add version comment to file header if not exists
-            cat > temp_template.tpl << EOF
-          ___TEMPLATE_VERSION___
-          // Template Version: ${VERSION}
-          // Released: ${TIMESTAMP}
-          ___TEMPLATE_VERSION___
-          
-          EOF
-            cat template.tpl >> temp_template.tpl
-            mv temp_template.tpl template.tpl
+            # Add ___NOTES___ section at the end if it doesn't exist
+            echo "" >> template.tpl
+            echo "___NOTES___" >> template.tpl
+            echo "" >> template.tpl
+            echo "Created on ${TIMESTAMP}" >> template.tpl
+            echo "" >> template.tpl
           fi
 
       - name: Fix metadata filename and update content
@@ -86,8 +83,6 @@ jobs:
           versions:
             - sha: ${COMMIT_SHA}
               changeNotes: "${RELEASE_NOTES}"
-              releaseDate: "${TIMESTAMP}"
-              version: "${VERSION}"
           EOF
           
           # Add existing versions if available
@@ -130,8 +125,6 @@ jobs:
           versions:
             - sha: ${FINAL_SHA}
               changeNotes: "${RELEASE_NOTES}"
-              releaseDate: "${TIMESTAMP}"
-              version: "${VERSION}"
           EOF
 
       - name: Amend commit with final metadata
