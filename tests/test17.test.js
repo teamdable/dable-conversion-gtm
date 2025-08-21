@@ -10,7 +10,7 @@ const mockData = {
   
   let initServiceId = '';
   
-  mock('createQueue', function(name) {
+  mock('createArgumentsQueue', function(functionName, queueName) {
     return function(cmd, id) {
       if (cmd === 'init') {
         initServiceId = id;

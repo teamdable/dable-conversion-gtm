@@ -9,7 +9,7 @@ const mockData = {
   
   let logMessages = [];
   
-  mock('createQueue', function() {
+  mock('createArgumentsQueue', function(functionName, queueName) {
     return function() {};
   });
   

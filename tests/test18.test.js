@@ -1,5 +1,5 @@
-// Test First Visit with PageView Auto-fire
-// 첫 방문 시 PageView 자동 실행 테스트
+// Test First Visit with Non-PageView Event
+// 첫 방문 시 PageView가 아닌 이벤트 테스트
 const mockData = {
     serviceId: '001-000-001',
     businessType: 'lead',
@@ -11,7 +11,7 @@ const mockData = {
   let trackedEvents = [];
   let logMessages = [];
   
-  mock('createQueue', function(name) {
+  mock('createArgumentsQueue', function(functionName, queueName) {
     return function(cmd, eventName, params) {
       if (cmd === 'track') {
         trackedEvents.push({event: eventName, params: params});
@@ -42,7 +42,6 @@ const mockData = {
   
   runCode(mockData);
   
-  // PageView와 Lead 이벤트 모두 추적되어야 함
-  assertThat(trackedEvents.length).isEqualTo(2);
-  assertThat(trackedEvents[0].event).isEqualTo('PageView');
-  assertThat(trackedEvents[1].event).isEqualTo('Lead');
+  // PageView 자동 실행이 없으므로 Lead 이벤트만 추적되어야 함
+  assertThat(trackedEvents.length).isEqualTo(1);
+  assertThat(trackedEvents[0].event).isEqualTo('Lead');

@@ -10,7 +10,7 @@ const mockData = {
   
   let eventTracked = '';
   
-  mock('createQueue', function(name) {
+  mock('createArgumentsQueue', function(functionName, queueName) {
     return function(cmd, eventName) {
       if (cmd === 'track') {
         eventTracked = eventName;

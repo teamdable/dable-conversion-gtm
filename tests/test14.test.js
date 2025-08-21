@@ -11,7 +11,7 @@ const mockData = {
   
   let trackedEvents = [];
   
-  mock('createQueue', function(name) {
+  mock('createArgumentsQueue', function(functionName, queueName) {
     return function(cmd, eventName, params) {
       if (cmd === 'track') {
         trackedEvents.push({event: eventName, params: params});

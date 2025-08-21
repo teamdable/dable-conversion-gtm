@@ -13,7 +13,7 @@ const mockData = {
   
   let dablenaCallArgs = [];
   
-  mock('createQueue', function(name) {
+  mock('createArgumentsQueue', function(functionName, queueName) {
     return function() {
       dablenaCallArgs.push(arguments);
     };

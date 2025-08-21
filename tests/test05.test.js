@@ -10,7 +10,7 @@ const mockData = {
   let initCalled = false;
   let pageViewCalled = false;
   
-  mock('createQueue', function() {
+  mock('createArgumentsQueue', function(functionName, queueName) {
     return function(cmd, param) {
       if (cmd === 'init') initCalled = true;
       if (cmd === 'track' && param === 'PageView') pageViewCalled = true;
