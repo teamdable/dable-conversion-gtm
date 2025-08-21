@@ -1,7 +1,5 @@
 homepage: "https://www.dable.io"
 documentation: "https://github.com/teamdable/dable-conversion-gtm/blob/main/README.md"
 versions:
-  - sha: ad1e9c9b6e4997df94de20f6a519dabbd1dc5947
-    changeNotes: "Update metadata.yaml"
-- sha: 13043f8323ed733cb431d24f03010971fd61d015
-changeNotes: "Add terms of service and update template"
+  - sha: ba8bd2c32c7f8e0b8ad1776b45857b21433c8369
+    changeNotes: "Release v1.0.4"

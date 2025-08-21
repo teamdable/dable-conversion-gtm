@@ -91,21 +91,24 @@ jobs:
           
           # Append existing versions if backup exists, but verify SHA exists in git
           if [ -f "metadata.yaml.bak" ]; then
-            # Extract and validate existing versions
-            grep -A 1 "^  - sha:" metadata.yaml.bak | while read -r line; do
-              if [[ "$line" =~ ^[[:space:]]*-[[:space:]]*sha:[[:space:]]*([a-f0-9]+)$ ]]; then
-                SHA_TO_CHECK="${BASH_REMATCH[1]}"
-                # Check if SHA exists in git history
-                if git rev-parse --verify "${SHA_TO_CHECK}" >/dev/null 2>&1; then
-                  echo "$line" >> metadata.yaml
-                  # Get the next line (changeNotes)
-                  read -r next_line
-                  if [[ "$next_line" =~ ^[[:space:]]*changeNotes: ]]; then
-                    echo "$next_line" >> metadata.yaml
-                  fi
-                fi
-              fi
-            done || true
+            # Extract existing versions using awk to preserve format
+            awk '
+            BEGIN { in_versions = 0; current_sha = ""; current_notes = "" }
+            /^versions:/ { in_versions = 1; next }
+            in_versions && /^  - sha: / { 
+              current_sha = $0
+              getline
+              if (/^    changeNotes: /) {
+                current_notes = $0
+                # Extract SHA for validation
+                match(current_sha, /sha: ([a-f0-9]+)/, arr)
+                if (arr[1] != "" && system("git rev-parse --verify " arr[1] " >/dev/null 2>&1") == 0) {
+                  print current_sha >> "metadata.yaml"
+                  print current_notes >> "metadata.yaml"
+                }
+              }
+            }
+            ' metadata.yaml.bak || true
           fi
 
       - name: Commit changes
@@ -122,50 +125,6 @@ jobs:
           
           Co-Authored-By: GitHub Actions <noreply@github.com>"
 
-      - name: Get final commit SHA
-        id: get_sha
-        run: |
-          FINAL_SHA=$(git rev-parse HEAD)
-          echo "final_sha=${FINAL_SHA}" >> $GITHUB_OUTPUT
-
-      - name: Update metadata.yaml with final SHA
-        run: |
-          FINAL_SHA="${{ steps.get_sha.outputs.final_sha }}"
-          VERSION="${{ github.event.inputs.version }}"
-          RELEASE_NOTES="${{ github.event.inputs.release_notes }}"
-          
-          # Update metadata.yaml with final SHA, preserving version history
-          cat > metadata.yaml << EOF
-          homepage: "https://www.dable.io"
-          documentation: "https://github.com/teamdable/dable-conversion-gtm/blob/main/README.md"
-          versions:
-            - sha: ${FINAL_SHA}
-              changeNotes: "${RELEASE_NOTES}"
-          EOF
-          
-          # Append existing versions if backup exists, but verify SHA exists in git
-          if [ -f "metadata.yaml.bak" ]; then
-            # Extract and validate existing versions
-            grep -A 1 "^  - sha:" metadata.yaml.bak | while read -r line; do
-              if [[ "$line" =~ ^[[:space:]]*-[[:space:]]*sha:[[:space:]]*([a-f0-9]+)$ ]]; then
-                SHA_TO_CHECK="${BASH_REMATCH[1]}"
-                # Check if SHA exists in git history
-                if git rev-parse --verify "${SHA_TO_CHECK}" >/dev/null 2>&1; then
-                  echo "$line" >> metadata.yaml
-                  # Get the next line (changeNotes)
-                  read -r next_line
-                  if [[ "$next_line" =~ ^[[:space:]]*changeNotes: ]]; then
-                    echo "$next_line" >> metadata.yaml
-                  fi
-                fi
-              fi
-            done || true
-          fi
-
-      - name: Amend commit with final metadata
-        run: |
-          git add metadata.yaml
-          git commit --amend --no-edit
 
       - name: Create and push tag
         run: |
@@ -175,6 +134,59 @@ jobs:
           
           git push origin main
           git push origin "${{ github.event.inputs.version }}"
+
+      - name: Get release tag SHA
+        id: get_tag_sha
+        run: |
+          # Get the SHA of the tag we just created
+          TAG_SHA=$(git rev-list -n 1 "${{ github.event.inputs.version }}")
+          echo "tag_sha=${TAG_SHA}" >> $GITHUB_OUTPUT
+
+      - name: Update metadata.yaml with tag SHA
+        run: |
+          TAG_SHA="${{ steps.get_tag_sha.outputs.tag_sha }}"
+          VERSION="${{ github.event.inputs.version }}"
+          RELEASE_NOTES="${{ github.event.inputs.release_notes }}"
+          
+          # Update metadata.yaml with the actual release tag SHA
+          cat > metadata.yaml << EOF
+          homepage: "https://www.dable.io"
+          documentation: "https://github.com/teamdable/dable-conversion-gtm/blob/main/README.md"
+          versions:
+            - sha: ${TAG_SHA}
+              changeNotes: "${RELEASE_NOTES}"
+          EOF
+          
+          # Append existing versions if backup exists, but verify SHA exists in git
+          if [ -f "metadata.yaml.bak" ]; then
+            # Extract existing versions using awk to preserve format
+            awk '
+            BEGIN { in_versions = 0; current_sha = ""; current_notes = "" }
+            /^versions:/ { in_versions = 1; next }
+            in_versions && /^  - sha: / { 
+              current_sha = $0
+              getline
+              if (/^    changeNotes: /) {
+                current_notes = $0
+                # Extract SHA for validation
+                match(current_sha, /sha: ([a-f0-9]+)/, arr)
+                if (arr[1] != "" && system("git rev-parse --verify " arr[1] " >/dev/null 2>&1") == 0) {
+                  print current_sha >> "metadata.yaml"
+                  print current_notes >> "metadata.yaml"
+                }
+              }
+            }
+            ' metadata.yaml.bak || true
+          fi
+          
+          # Commit the final metadata.yaml with correct tag SHA
+          git add metadata.yaml
+          git commit -m "Update metadata.yaml with release tag SHA ${TAG_SHA}
+
+          🤖 Generated with GitHub Actions
+          
+          Co-Authored-By: GitHub Actions <noreply@github.com>"
+          git push origin main
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v1
@@ -190,7 +202,7 @@ jobs:
             
             ## GTM Template Information
             
-            - **Template SHA**: `${{ steps.get_sha.outputs.final_sha }}`
+            - **Template SHA**: `${{ steps.get_tag_sha.outputs.tag_sha }}`
             - **Release Date**: $(date -u '+%Y-%m-%d')
             - **Documentation**: [README.md](https://github.com/teamdable/dable-conversion-gtm/blob/main/README.md)
             
@@ -212,7 +224,7 @@ jobs:
           VERSION="${{ github.event.inputs.version }}"
           RELEASE_NOTES="${{ github.event.inputs.release_notes }}"
           TIMESTAMP=$(date -u '+%Y-%m-%d')
-          FINAL_SHA="${{ steps.get_sha.outputs.final_sha }}"
+          FINAL_SHA="${{ steps.get_tag_sha.outputs.tag_sha }}"
           
           # Create CHANGELOG.md if not exists
           if [ ! -f "CHANGELOG.md" ]; then
@@ -265,11 +277,11 @@ jobs:
           echo ""
           echo "📋 Summary:"
           echo "- Version: ${{ github.event.inputs.version }}"
-          echo "- SHA: ${{ steps.get_sha.outputs.final_sha }}"
+          echo "- SHA: ${{ steps.get_tag_sha.outputs.tag_sha }}"
           echo "- Files updated: template.tpl, metadata.yaml, CHANGELOG.md"
           echo "- Tag created: ${{ github.event.inputs.version }}"
           echo "- GitHub Release created: ✅"
           echo ""
           echo "🔗 Links:"
           echo "- Release: ${{ github.server_url }}/${{ github.repository }}/releases/tag/${{ github.event.inputs.version }}"
-          echo "- Commit: ${{ github.server_url }}/${{ github.repository }}/commit/${{ steps.get_sha.outputs.final_sha }}"
+          echo "- Commit: ${{ github.server_url }}/${{ github.repository }}/commit/${{ steps.get_tag_sha.outputs.tag_sha }}"
