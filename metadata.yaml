@@ -1,7 +1,5 @@
 homepage: "https://www.dable.io"
 documentation: "https://github.com/teamdable/dable-conversion-gtm/blob/main/README.md"
 versions:
-  - sha: f2420e06e8502f404d240fb361578a4433f45772
-    changeNotes: "Initial Release"
-    releaseDate: "2025-08-21"
-    version: "v1.0.0"
+  - sha: f14814a995017c1b5672951a5a46fc209f0489d6
+    changeNotes: "Update template.tpl"
