@@ -89,10 +89,23 @@ jobs:
               changeNotes: "${RELEASE_NOTES}"
           EOF
           
-          # Append existing versions (excluding header) if backup exists
+          # Append existing versions if backup exists, but verify SHA exists in git
           if [ -f "metadata.yaml.bak" ]; then
-            # Extract existing versions and append them
-            grep -A 999 "^  - sha:" metadata.yaml.bak >> metadata.yaml || true
+            # Extract and validate existing versions
+            grep -A 1 "^  - sha:" metadata.yaml.bak | while read -r line; do
+              if [[ "$line" =~ ^[[:space:]]*-[[:space:]]*sha:[[:space:]]*([a-f0-9]+)$ ]]; then
+                SHA_TO_CHECK="${BASH_REMATCH[1]}"
+                # Check if SHA exists in git history
+                if git rev-parse --verify "${SHA_TO_CHECK}" >/dev/null 2>&1; then
+                  echo "$line" >> metadata.yaml
+                  # Get the next line (changeNotes)
+                  read -r next_line
+                  if [[ "$next_line" =~ ^[[:space:]]*changeNotes: ]]; then
+                    echo "$next_line" >> metadata.yaml
+                  fi
+                fi
+              fi
+            done || true
           fi
 
       - name: Commit changes
@@ -130,10 +143,23 @@ jobs:
               changeNotes: "${RELEASE_NOTES}"
           EOF
           
-          # Append existing versions (excluding the first temporary entry) if backup exists
+          # Append existing versions if backup exists, but verify SHA exists in git
           if [ -f "metadata.yaml.bak" ]; then
-            # Extract existing versions and append them
-            grep -A 999 "^  - sha:" metadata.yaml.bak >> metadata.yaml || true
+            # Extract and validate existing versions
+            grep -A 1 "^  - sha:" metadata.yaml.bak | while read -r line; do
+              if [[ "$line" =~ ^[[:space:]]*-[[:space:]]*sha:[[:space:]]*([a-f0-9]+)$ ]]; then
+                SHA_TO_CHECK="${BASH_REMATCH[1]}"
+                # Check if SHA exists in git history
+                if git rev-parse --verify "${SHA_TO_CHECK}" >/dev/null 2>&1; then
+                  echo "$line" >> metadata.yaml
+                  # Get the next line (changeNotes)
+                  read -r next_line
+                  if [[ "$next_line" =~ ^[[:space:]]*changeNotes: ]]; then
+                    echo "$next_line" >> metadata.yaml
+                  fi
+                fi
+              fi
+            done || true
           fi
 
       - name: Amend commit with final metadata
