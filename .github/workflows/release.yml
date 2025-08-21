@@ -70,13 +70,17 @@ jobs:
             mv metadta.yml metadata.yaml
           fi
           
+          # Backup existing metadata.yaml to preserve version history
+          if [ -f "metadata.yaml" ]; then
+            cp metadata.yaml metadata.yaml.bak
+          fi
+          
           # Get current commit SHA from Git
           COMMIT_SHA=$(git rev-parse HEAD)
           VERSION="${{ github.event.inputs.version }}"
           RELEASE_NOTES="${{ github.event.inputs.release_notes }}"
-          TIMESTAMP=$(date -u '+%Y-%m-%d')
           
-          # Update metadata.yaml
+          # Create new metadata.yaml with latest version at top
           cat > metadata.yaml << EOF
           homepage: "https://www.dable.io"
           documentation: "https://github.com/teamdable/dable-conversion-gtm/blob/main/README.md"
@@ -85,10 +89,10 @@ jobs:
               changeNotes: "${RELEASE_NOTES}"
           EOF
           
-          # Add existing versions if available
+          # Append existing versions (excluding header) if backup exists
           if [ -f "metadata.yaml.bak" ]; then
-            echo "  # Previous versions preserved" >> metadata.yaml
-            grep "^  - sha:" metadata.yaml.bak >> metadata.yaml || true
+            # Extract existing versions and append them
+            grep -A 999 "^  - sha:" metadata.yaml.bak >> metadata.yaml || true
           fi
 
       - name: Commit changes
@@ -116,9 +120,8 @@ jobs:
           FINAL_SHA="${{ steps.get_sha.outputs.final_sha }}"
           VERSION="${{ github.event.inputs.version }}"
           RELEASE_NOTES="${{ github.event.inputs.release_notes }}"
-          TIMESTAMP=$(date -u '+%Y-%m-%d')
           
-          # Update metadata.yaml with final SHA
+          # Update metadata.yaml with final SHA, preserving version history
           cat > metadata.yaml << EOF
           homepage: "https://www.dable.io"
           documentation: "https://github.com/teamdable/dable-conversion-gtm/blob/main/README.md"
@@ -126,6 +129,12 @@ jobs:
             - sha: ${FINAL_SHA}
               changeNotes: "${RELEASE_NOTES}"
           EOF
+          
+          # Append existing versions (excluding the first temporary entry) if backup exists
+          if [ -f "metadata.yaml.bak" ]; then
+            # Extract existing versions and append them
+            grep -A 999 "^  - sha:" metadata.yaml.bak >> metadata.yaml || true
+          fi
 
       - name: Amend commit with final metadata
         run: |
