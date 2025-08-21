@@ -1,0 +1,5 @@
+homepage: "https://www.dable.io"
+documentation: "https://github.com/teamdable/dable-conversion-gtm/blob/main/README_EN.md"
+versions:
+  - sha: 
+    changeNotes: Initial release.
