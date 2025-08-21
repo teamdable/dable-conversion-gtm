@@ -1,6 +1,8 @@
 homepage: "https://www.dable.io"
 documentation: "https://github.com/teamdable/dable-conversion-gtm/blob/main/README.md"
 versions:
+  - sha: df44af2a7ff24720a63fba5092851c2b5ad85e54
+    changeNotes: "Update template.tpl"
   - sha: 154963a0f81fa44b32f0b3e1f6d7a7453bc079c8
     changeNotes: "Update metadata.yaml"
   - sha: f14814a995017c1b5672951a5a46fc209f0489d6
