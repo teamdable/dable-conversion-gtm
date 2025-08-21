@@ -5,6 +5,14 @@ All notable changes to this GTM template will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v1.0.5] - 2025-08-21
+
+fix sha issue
+
+- **SHA**: `53732d8e174c68a86487b25eb7a7fd279718bbd5`
+- **Template Updated**: Yes
+- **Metadata Updated**: Yes
+
 ## [v1.0.4] - 2025-08-21
 
 Update metadata.yaml
