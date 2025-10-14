@@ -162,7 +162,3 @@ initializeTracking(dablena);
 
 // Track the current event
 trackEvent(eventParams);
-
-// dablena.q.push
-// __dablena_gtm_loaded
-// __dablena_script_loaded
