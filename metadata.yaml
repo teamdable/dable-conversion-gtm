@@ -1,7 +1,7 @@
 homepage: "https://www.dable.io"
 documentation: "https://github.com/teamdable/dable-conversion-gtm/blob/main/README.md"
 versions:
-  - sha: 27fc8129c28a4bd947e4a2c4f6d193ffa3a68ced
+  - sha: 29dc9e1f967de7299c408fc784b8ec413b6b9f82
     changeNotes: "fix timer issue, reduce bundle size"
   - sha: ed1c304c8b9db0f039302a60da20d80dc8acdea3
     changeNotes: "fix timer issue"
