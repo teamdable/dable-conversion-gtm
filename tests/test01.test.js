@@ -22,6 +22,8 @@ mock('createArgumentsQueue', function(functionName, queueName) {
 
 mock('copyFromWindow', function(name) {
   if (name === '__dablena_gtm_loaded') return false;
+  if (name === '__dablena_script_loaded') return false;
+  if (name === 'dablena') return undefined;
   return undefined;
 });
 
@@ -39,6 +41,11 @@ mock('injectScript', function(url, onSuccess) {
 
 mock('makeTableMap', function() {
   return {};
+});
+
+mock('callInWindow', function() {
+  // Not used in first execution (script not loaded yet)
+  return undefined;
 });
 
 // 템플릿 실행

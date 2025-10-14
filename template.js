@@ -1,12 +1,13 @@
-// Require necessary APIs
+// GTM API imports
 const copyFromWindow = require('copyFromWindow');
 const setInWindow = require('setInWindow');
 const injectScript = require('injectScript');
 const makeTableMap = require('makeTableMap');
 const log = require('logToConsole');
 const createArgumentsQueue = require('createArgumentsQueue');
+const callInWindow = require('callInWindow');
 
-// Get user inputs
+// User configuration
 const serviceId = data.serviceId;
 const eventType = data.eventType === 'custom' ? data.customEventName : data.eventType;
 const value = data.value || undefined;
@@ -15,42 +16,23 @@ const customParams = data.customParams ? makeTableMap(data.customParams, 'name',
 const scriptAlreadyLoaded = data.scriptAlreadyLoaded;
 const debugMode = data.debugMode;
 
-// Function to initialize dablena queue
+// Initialize dablena queue for init command
 function initializeDablena() {
-  const existingDablena = copyFromWindow('dablena');
-  if (debugMode) {
-    log('Dable GTM: existingDablena:', !!existingDablena);
-  }
+  // Always create queue for compatibility
+  const dablena = createArgumentsQueue('dablena', 'dablena.q');
 
-  let dablena;
-  if (!existingDablena) {
-    // Create dablena function and queue array exactly like native implementation
-    dablena = createArgumentsQueue('dablena', 'dablena.q');
-    
-    if (debugMode) {
-      log('Dable GTM: Created dablena queue using createArgumentsQueue');
-    }
-  } else {
-    dablena = existingDablena;
-  }
-
-  // Debug: Check if dablena function works properly
   if (debugMode) {
-    log('Dable GTM: dablena function exists:', !!dablena);
-    if (dablena) {
-      log('Dable GTM: dablena type:', typeof dablena);
-      log('Dable GTM: Ready to queue commands');
-    }
+    log('Dable GTM: Initialized dablena queue');
   }
 
   return dablena;
 }
 
-// Function to prepare event parameters
+// Prepare event parameters
 function prepareEventParams() {
   let eventParams = {};
 
-  // Handle Purchase event with value and currency
+  // Validate Purchase event parameters
   if (eventType === 'Purchase') {
     if (!value) {
       log('Dable GTM Error: Purchase event requires a value parameter');
@@ -76,32 +58,26 @@ function prepareEventParams() {
   return eventParams;
 }
 
-// Function to initialize tracking (run only once per page)
+// Initialize tracking (run only once per page)
 function initializeTracking(dablena) {
   const isLoaded = copyFromWindow('__dablena_gtm_loaded');
-  
+
   if (!isLoaded && !scriptAlreadyLoaded) {
-    if (debugMode) {
-      log('Dable GTM: Initializing with Service ID:', serviceId);
-    }
-    
-    // Mark as loaded
     setInWindow('__dablena_gtm_loaded', true, true);
-    
-    // Initialize Dable - this will be queued
     dablena('init', serviceId);
-    
+
     if (debugMode) {
-      log('Dable GTM: Commands queued successfully');
+      log('Dable GTM: Initialized with Service ID:', serviceId);
     }
   }
-  
-  return isLoaded;
 }
 
-// Function to track the current event
-function trackEvent(dablena, eventParams) {
-  // Check if eventParams has any properties
+// Track the current event
+function trackEvent(eventParams) {
+  const scriptLoaded = copyFromWindow('__dablena_script_loaded');
+  const existingDablena = copyFromWindow('dablena');
+
+  // Check if event has parameters
   let hasParams = false;
   for (let key in eventParams) {
     if (eventParams.hasOwnProperty(key)) {
@@ -109,29 +85,47 @@ function trackEvent(dablena, eventParams) {
       break;
     }
   }
-  
-  if (hasParams) {
-    dablena('track', eventType, eventParams);
+
+  // If script is already loaded, push directly to window.dablena.q
+  if (scriptLoaded && existingDablena) {
+    // Create event array: ['track', eventType, eventParams?]
+    const eventArray = hasParams ? ['track', eventType, eventParams] : ['track', eventType];
+
+    // Push to queue: window.dablena.q.push(eventArray)
+    callInWindow('dablena.q.push', eventArray);
+
     if (debugMode) {
-      log('Dable GTM: Event queued with parameters:', eventType, eventParams);
+      log('Dable GTM: Event pushed via callInWindow:', eventType);
     }
   } else {
-    dablena('track', eventType);
+    // Script not loaded yet - use createArgumentsQueue
+    const dablena = createArgumentsQueue('dablena', 'dablena.q');
+
+    if (hasParams) {
+      dablena('track', eventType, eventParams);
+    } else {
+      dablena('track', eventType);
+    }
+
     if (debugMode) {
       log('Dable GTM: Event queued:', eventType);
     }
   }
 }
 
-// Function to load the Dable script
+// Load the Dable script
 function loadScript(scriptUrl) {
-  injectScript(scriptUrl, 
+  injectScript(
+    scriptUrl,
     function() {
+      // Set flag after script loads successfully
+      setInWindow('__dablena_script_loaded', true, true);
+
       if (debugMode) {
         log('Dable GTM: Script loaded successfully');
       }
       data.gtmOnSuccess();
-    }, 
+    },
     function() {
       if (debugMode) {
         log('Dable GTM: Script failed to load');
@@ -142,20 +136,33 @@ function loadScript(scriptUrl) {
   );
 }
 
-// Dable script URL
+
+// Main Execution
 const scriptUrl = 'https://static.dable.io/dist/dablena.min.js';
 
-// 1. Load the Dable script first (parallel loading)
-loadScript(scriptUrl);
+// Load script on first execution
+const scriptLoaded = copyFromWindow('__dablena_script_loaded');
+if (!scriptLoaded && !scriptAlreadyLoaded) {
+  if (debugMode) {
+    log('Dable GTM: Loading script for the first time');
+  }
+  loadScript(scriptUrl);
+} else if (debugMode) {
+  log('Dable GTM: Script already loaded, skipping');
+}
 
-// 2. Initialize dablena queue
+// Initialize dablena queue
 const dablena = initializeDablena();
 
-// 3. Prepare event parameters
+// Prepare event parameters
 const eventParams = prepareEventParams();
 
-// 4. Initialize tracking (first load setup)
+// Initialize tracking (run once per page)
 initializeTracking(dablena);
 
-// 5. Track the current event
-trackEvent(dablena, eventParams);
+// Track the current event
+trackEvent(eventParams);
+
+// dablena.q.push
+// __dablena_gtm_loaded
+// __dablena_script_loaded
