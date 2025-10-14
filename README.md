@@ -266,6 +266,103 @@ const createArgumentsQueue = require('createArgumentsQueue');
 2. **테스트 업데이트**: 코드 변경 시 `___TESTS___` 섹션의 테스트 케이스도 함께 업데이트
 3. **보안 검토**: 추가 권한이 최소 필요 범위인지 확인
 
+## 릴리즈 프로세스 (개발자용)
+
+이 템플릿은 GitHub Actions를 통해 자동으로 릴리즈됩니다.
+
+### 릴리즈 방법
+
+1. **GitHub Actions 페이지로 이동**
+   - Repository > Actions > "Release GTM Template" 워크플로우 선택
+
+2. **Run workflow 클릭**
+   - Branch: `main` 선택
+   - 다음 정보 입력:
+     - **Version**: 버전 번호 (예: `v1.0.6`)
+       - 형식: `v[major].[minor].[patch]` (예: `v1.0.0`, `v1.2.3`)
+     - **Release notes**: 릴리즈 노트 내용
+
+3. **자동 처리 내용**
+
+   워크플로우가 다음 작업을 자동으로 수행합니다:
+
+   ✅ **버전 검증**
+   - 버전 형식 확인 (`v[숫자].[숫자].[숫자]`)
+   - 중복 태그 체크
+
+   ✅ **파일 업데이트**
+   - `template.tpl`: 타임스탬프 갱신
+   - `metadata.yaml`: 새 버전 SHA 추가
+   - `CHANGELOG.md`: 릴리즈 노트 추가
+
+   ✅ **Git 작업**
+   - 변경사항 커밋
+   - Git 태그 생성 및 푸시
+   - GitHub Release 생성
+
+   ✅ **GTM 커뮤니티 갤러리 연동**
+   - `metadata.yaml`의 SHA를 통해 GTM 갤러리 자동 업데이트
+
+### 릴리즈 버전 규칙
+
+이 프로젝트는 [Semantic Versioning](https://semver.org/)을 따릅니다:
+
+- **Major** (v2.0.0): Breaking changes (호환성 깨지는 변경)
+- **Minor** (v1.1.0): 새 기능 추가 (하위 호환성 유지)
+- **Patch** (v1.0.1): 버그 수정
+
+### 릴리즈 예시
+
+```yaml
+Version: v1.0.6
+Release notes: |
+  ### 개선사항
+  - 타이머 트리거 이슈 수정
+  - callInWindow 사용으로 변경하여 안정성 향상
+
+  ### 버그 수정
+  - 스크립트 로드 후 이벤트 전송 문제 해결
+```
+
+### 릴리즈 후 확인사항
+
+1. **GitHub Release 페이지 확인**
+   - https://github.com/teamdable/dable-conversion-gtm/releases
+
+2. **GTM 커뮤니티 갤러리 확인**
+   - GTM에서 "Dable Conversion" 검색
+   - 새 버전이 표시되는지 확인 (최대 24시간 소요)
+
+3. **metadata.yaml 검증**
+   - SHA가 올바른 커밋을 가리키는지 확인
+   - 버전 히스토리가 올바르게 보존되었는지 확인
+
+### 수동 롤백 방법
+
+문제 발생 시:
+
+```bash
+# 1. 태그 삭제
+git tag -d v1.0.6
+git push origin :refs/tags/v1.0.6
+
+# 2. 커밋 되돌리기
+git revert HEAD~3  # 최근 3개 커밋 되돌리기
+
+# 3. metadata.yaml 수동 수정
+# 이전 버전의 SHA로 복구
+
+# 4. 푸시
+git push origin main
+```
+
+### 주의사항
+
+⚠️ **중요**:
+- 릴리즈 후에는 태그를 수정하거나 삭제하지 마세요
+- GTM 갤러리에 배포된 후에는 롤백이 어렵습니다
+- 릴리즈 전에 반드시 테스트를 완료하세요
+
 ## 관련 문서
 
 - [GTM Data Layer 가이드](https://developers.google.com/tag-platform/tag-manager/datalayer)
