@@ -1,7 +1,7 @@
 homepage: "https://www.dable.io"
 documentation: "https://github.com/teamdable/dable-conversion-gtm/blob/main/README.md"
 versions:
-  - sha: 9cb01789b22d35f3b4b5d626ee0413611b60e811
+  - sha: ed1c304c8b9db0f039302a60da20d80dc8acdea3
     changeNotes: "fix timer issue"
   - sha: 53732d8e174c68a86487b25eb7a7fd279718bbd5
     changeNotes: "fix sha issue"
