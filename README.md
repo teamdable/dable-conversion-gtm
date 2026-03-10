@@ -245,12 +245,6 @@ console.log('{{purchase_value}}'); // 변수 값 확인 (GTM Preview에서만)
 
 `examples/` 폴더에서 테스트용 HTML 파일들을 제공합니다.
 
-### dpa-test.html
-DPA(상품 기반 리타겟팅) 테스트 페이지입니다.
-- PageView에 상품 ID 포함
-- AddToCart, Purchase에 상품 ID 포함
-- DataLayer 로그 실시간 확인
-
 ### purchase-test.html
 Purchase 이벤트 테스트용 간단한 페이지입니다.
 - 버튼 클릭으로 Purchase 이벤트 발생

@@ -245,12 +245,6 @@ console.log('{{purchase_value}}'); // Check variable value (GTM Preview only)
 
 Test HTML files are provided in the `examples/` folder.
 
-### dpa-test.html
-Test page for DPA (product-based retargeting).
-- PageView with product IDs
-- AddToCart, Purchase with product IDs
-- Real-time DataLayer log monitoring
-
 ### purchase-test.html
 Simple page for testing Purchase events.
 - Generate Purchase events with button clicks
