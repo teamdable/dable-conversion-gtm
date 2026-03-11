@@ -59,7 +59,7 @@
                 'dable_items': [
                     { 'product_id': 'SKU-001' }
                 ],
-                'event': 'dable_viewcontent'
+                'event': 'view_content'
             });
             appendLog('[ViewContent] dable_items: [{product_id: "SKU-001"}]');
         }
@@ -69,7 +69,7 @@
                 'dable_items': [
                     { 'product_id': 'SKU-001' }
                 ],
-                'event': 'dable_addtocart'
+                'event': 'add_to_cart'
             });
             appendLog('[AddToCart] dable_items: [{product_id: "SKU-001"}]');
         }
@@ -82,7 +82,7 @@
                     { 'product_id': 'SKU-001' },
                     { 'product_id': 'SKU-002' }
                 ],
-                'event': 'dable_purchase'
+                'event': 'purchase_completed'
             });
             appendLog('[Purchase] value: 89000, currency: KRW, dable_items: 2 items');
         }
