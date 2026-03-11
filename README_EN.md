@@ -50,9 +50,10 @@ To use DPA (product-based retargeting), you need to pass product IDs through the
 ### Step 2: Add Data Layer Code to Webpage
 
 ```javascript
-// Product detail page (PageView) - push before GTM script loads
+// Product detail page (ViewContent)
 dataLayer.push({
-  'dable_items': [{ 'product_id': '12345' }]
+  'dable_items': [{ 'product_id': '12345' }],
+  'event': 'view_content'
 });
 
 // Add to cart
@@ -74,7 +75,7 @@ dataLayer.push({
 
 Enter `{{dable_items}}` in the **Items (DPA)** field of the Dable Conversion tag.
 
-> **Note:** The Items (DPA) field is used with PageView, AddToCart, and Purchase events. It is ignored for other events.
+> **Note:** The Items (DPA) field is used with ViewContent, AddToCart, and Purchase events. It is ignored for other events.
 
 ## Purchase Event Setup (Step-by-Step Guide)
 

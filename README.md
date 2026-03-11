@@ -50,9 +50,10 @@ DPA(상품 기반 리타겟팅)를 사용하려면 상품 ID를 Items (DPA) 필�
 ### 2단계: 웹페이지에 Data Layer 코드 추가
 
 ```javascript
-// 상품 상세 페이지 (PageView) - GTM 스크립트 로드 전에 push
+// 상품 상세 페이지 (ViewContent)
 dataLayer.push({
-  'dable_items': [{ 'product_id': '12345' }]
+  'dable_items': [{ 'product_id': '12345' }],
+  'event': 'view_content'
 });
 
 // 장바구니 추가
@@ -74,7 +75,7 @@ dataLayer.push({
 
 Dable Conversion 태그의 **Items (DPA)** 필드에 `{{dable_items}}`를 입력합니다.
 
-> **참고:** Items (DPA) 필드는 PageView, AddToCart, Purchase 이벤트에서 사용됩니다. 다른 이벤트에서는 무시됩니다.
+> **참고:** Items (DPA) 필드는 ViewContent, AddToCart, Purchase 이벤트에서 사용됩니다. 다른 이벤트에서는 무시됩니다.
 
 ## Purchase 이벤트 설정 (단계별 가이드)
 
