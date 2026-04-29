@@ -1,6 +1,8 @@
 homepage: "https://www.dable.io"
 documentation: "https://github.com/teamdable/dable-conversion-gtm/blob/main/README.md"
 versions:
+  - sha: 98cf43f4687a2a8f4d7f23fbd64e0ad637c3e118
+    changeNotes: "product 정보 입력 필드 추가"
   - sha: 29dc9e1f967de7299c408fc784b8ec413b6b9f82
     changeNotes: "fix timer issue, reduce bundle size"
   - sha: ed1c304c8b9db0f039302a60da20d80dc8acdea3
