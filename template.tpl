@@ -171,6 +171,14 @@ ___TEMPLATE_PARAMETERS___
           }
         ],
         "valueHint": "{{purchase_currency}} or KRW"
+      },
+      {
+        "help": "\u003cb\u003eProduct items for DPA (Dynamic Product Ads).\u003c/b\u003e\u003cbr\u003e\u003cbr\u003eUse a GTM variable (e.g. {{dable_items}}) that returns an array:\u003cbr\u003e\u003ccode\u003e[{\"product_id\": \"SKU-001\"}, {\"product_id\": \"SKU-002\"}]\u003c/code\u003e\u003cbr\u003e\u003cbr\u003e\u003cb\u003eproduct_id\u003c/b\u003e (required): Unique product ID",
+        "simpleValueType": true,
+        "name": "items",
+        "displayName": "Items (DPA)",
+        "type": "TEXT",
+        "valueHint": "{{dable_items}}"
       }
     ]
   },
@@ -251,6 +259,11 @@ function prepareEventParams() {
     }
     eventParams.value = value;
     eventParams.currency = currency;
+  }
+
+  // Add items for DPA
+  if (data.items) {
+    eventParams.items = data.items;
   }
 
   // Add custom parameters

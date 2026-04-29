@@ -35,6 +35,48 @@ Purchase 이벤트 사용 시 **반드시 GTM에서 변수를 먼저 생성**해
 - **Purchase**: 구매 완료 추적 (value, currency 파라미터 필수)
 - **Custom Event**: 사용자 정의 이벤트 (event1, event2, event3)
 
+## DPA (Dynamic Product Ads) 설정
+
+DPA(상품 기반 리타겟팅)를 사용하려면 상품 ID를 Items (DPA) 필드로 전달해야 합니다.
+
+### 1단계: GTM 변수 생성
+
+1. GTM에서 **변수** > **새로 만들기** 클릭
+2. **변수 구성** > **데이터 영역 변수** 선택
+3. **변수 이름**: `dable_items`
+4. **데이터 영역 변수 이름**: `dable_items`
+5. **저장**
+
+### 2단계: 웹페이지에 Data Layer 코드 추가
+
+```javascript
+// 상품 상세 페이지 (ViewContent)
+dataLayer.push({
+  'dable_items': [{ 'product_id': '12345' }],
+  'event': 'view_content'
+});
+
+// 장바구니 추가
+dataLayer.push({
+  'dable_items': [{ 'product_id': '12345' }, { 'product_id': '67890' }],
+  'event': 'add_to_cart'
+});
+
+// 구매 완료
+dataLayer.push({
+  'purchase_value': 89000,
+  'purchase_currency': 'KRW',
+  'dable_items': [{ 'product_id': '12345' }, { 'product_id': '67890' }],
+  'event': 'purchase_completed'
+});
+```
+
+### 3단계: GTM 태그 설정
+
+Dable Conversion 태그의 **Items (DPA)** 필드에 `{{dable_items}}`를 입력합니다.
+
+> **참고:** Items (DPA) 필드는 ViewContent, AddToCart, Purchase 이벤트에서 사용됩니다. 다른 이벤트에서는 무시됩니다.
+
 ## Purchase 이벤트 설정 (단계별 가이드)
 
 ### 1단계: GTM 변수 생성 (필수)
@@ -85,9 +127,11 @@ dataLayer.push({
 ## 변수 설정 체크리스트
 
 - [ ] GTM에서 `purchase_value` 변수 생성
-- [ ] GTM에서 `purchase_currency` 변수 생성  
+- [ ] GTM에서 `purchase_currency` 변수 생성
+- [ ] GTM에서 `dable_items` 변수 생성 (DPA 사용 시)
 - [ ] 웹페이지에 dataLayer.push() 코드 추가
 - [ ] 태그에서 `{{purchase_value}}`, `{{purchase_currency}}` 사용
+- [ ] 태그에서 `{{dable_items}}` 사용 (DPA 사용 시)
 - [ ] 트리거 설정 완료
 - [ ] GTM Preview 모드에서 테스트
 

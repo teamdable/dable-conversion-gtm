@@ -64,12 +64,14 @@
             dataLayer.push({
                 'purchase_value': 15000,
                 'purchase_currency': 'KRW',
+                'dable_items': [{ 'product_id': '12345' }, { 'product_id': '67890' }],
                 'transaction_id': 'TXN_' + Date.now(),
                 'event': 'purchase_completed'
             });
             log('Purchase 이벤트 전송 (KRW)', {
                 purchase_value: 15000,
-                purchase_currency: 'KRW'
+                purchase_currency: 'KRW',
+                dable_items: [{ product_id: '12345' }, { product_id: '67890' }]
             });
         }
 

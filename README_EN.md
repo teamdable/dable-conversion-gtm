@@ -35,6 +35,48 @@ When you enter `{{purchase_value}}` or `{{purchase_currency}}` in the template, 
 - **Purchase**: Track purchase completion (value, currency parameters required)
 - **Custom Event**: User-defined events (event1, event2, event3)
 
+## DPA (Dynamic Product Ads) Setup
+
+To use DPA (product-based retargeting), you need to pass product IDs through the Items (DPA) field.
+
+### Step 1: Create GTM Variable
+
+1. In GTM, click **Variables** > **New**
+2. Select **Variable Configuration** > **Data Layer Variable**
+3. **Variable Name**: `dable_items`
+4. **Data Layer Variable Name**: `dable_items`
+5. **Save**
+
+### Step 2: Add Data Layer Code to Webpage
+
+```javascript
+// Product detail page (ViewContent)
+dataLayer.push({
+  'dable_items': [{ 'product_id': '12345' }],
+  'event': 'view_content'
+});
+
+// Add to cart
+dataLayer.push({
+  'dable_items': [{ 'product_id': '12345' }, { 'product_id': '67890' }],
+  'event': 'add_to_cart'
+});
+
+// Purchase completion
+dataLayer.push({
+  'purchase_value': 89000,
+  'purchase_currency': 'KRW',
+  'dable_items': [{ 'product_id': '12345' }, { 'product_id': '67890' }],
+  'event': 'purchase_completed'
+});
+```
+
+### Step 3: Configure GTM Tag
+
+Enter `{{dable_items}}` in the **Items (DPA)** field of the Dable Conversion tag.
+
+> **Note:** The Items (DPA) field is used with ViewContent, AddToCart, and Purchase events. It is ignored for other events.
+
 ## Purchase Event Setup (Step-by-Step Guide)
 
 ### Step 1: Create GTM Variables (Required)
@@ -86,8 +128,10 @@ dataLayer.push({
 
 - [ ] Create `purchase_value` variable in GTM
 - [ ] Create `purchase_currency` variable in GTM
+- [ ] Create `dable_items` variable in GTM (for DPA)
 - [ ] Add dataLayer.push() code to webpage
 - [ ] Use `{{purchase_value}}`, `{{purchase_currency}}` in tag
+- [ ] Use `{{dable_items}}` in tag (for DPA)
 - [ ] Complete trigger setup
 - [ ] Test in GTM Preview mode
 

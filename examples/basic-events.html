@@ -76,8 +76,11 @@
         }
 
         function testAddToCart() {
-            dataLayer.push({ 'event': 'dable_addtocart' });
-            log('AddToCart 이벤트 전송');
+            dataLayer.push({
+                'dable_items': [{ 'product_id': '12345' }],
+                'event': 'dable_addtocart'
+            });
+            log('AddToCart 이벤트 전송 (with dable_items)');
         }
 
         function testInitiateCheckout() {
