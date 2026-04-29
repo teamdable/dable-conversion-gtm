@@ -5,6 +5,14 @@ All notable changes to this GTM template will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v1.1.0] - 2026-04-29
+
+product 정보 입력 필드 추가
+
+- **SHA**: `ef692aabe6324c62038bc3630371a867d2ed1c79`
+- **Template Updated**: Yes
+- **Metadata Updated**: Yes
+
 ## [v1.0.7] - 2025-10-14
 
 fix timer issue, reduce bundle size
